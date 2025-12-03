@@ -181,3 +181,16 @@ impl U256 {
         (U256(res), borrow != 0)
     }
 }
+
+impl From<U256> for U512 {
+    fn from(value: U256) -> Self {
+        U512(From::from(&value.0))
+    }
+}
+
+impl U512 {
+    pub fn split(self) -> (U256, U256) {
+        let (lhs, rhs) = self.0.split();
+        (U256(lhs), U256(rhs))
+    }
+}
