@@ -54,6 +54,7 @@ macro_rules! impl_bigint_wrapper {
             Clone,
             Eq,
             PartialEq,
+            Hash,
             Ord,
             PartialOrd,
             Default,
