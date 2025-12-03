@@ -155,6 +155,46 @@ macro_rules! impl_bigint_wrapper {
                 Self(From::from(value))
             }
         }
+
+        // Ideally you'd write a version of this that didn't alloc, but it's fine for now
+        impl std::fmt::Display for $name {
+            fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+                write!(f, "{}", self.0.to_string_radix_vartime(10))
+            }
+        }
+
+        impl std::fmt::Debug for $name {
+            fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+                f.write_str(stringify!($name))?;
+                f.write_str("(")?;
+                std::fmt::Display::fmt(self, f)?;
+                f.write_str(")")
+            }
+        }
+
+        impl std::fmt::LowerHex for $name {
+            fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+                write!(f, "{:x}", &self.0)
+            }
+        }
+
+        impl std::fmt::UpperHex for $name {
+            fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+                write!(f, "{:X}", &self.0)
+            }
+        }
+
+        impl std::fmt::Binary for $name {
+            fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+                write!(f, "{:b}", &self.0)
+            }
+        }
+
+        impl std::fmt::Octal for $name {
+            fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+                write!(f, "{}", self.0.to_string_radix_vartime(8))
+            }
+        }
     };
 }
 
