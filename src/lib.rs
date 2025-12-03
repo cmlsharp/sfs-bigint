@@ -10,7 +10,7 @@ use std::ops::Neg;
 use crypto_bigint::Limb;
 
 macro_rules! impl_bigint_wrapper {
-    ($name:ident, $wrapped:path) => {
+    ($name:ident, $wrapped:path, $width:literal) => {
         #[derive(
             Copy,
             Clone,
@@ -45,6 +45,9 @@ macro_rules! impl_bigint_wrapper {
         pub struct $name($wrapped);
 
         impl $name {
+            pub const BYTES: usize = $width / 8;
+            pub const WORDS: usize = $width / 64;
+
             /// Returns `true` if the bit at index `i` is set.
             pub fn bit(&self, i: usize) -> bool {
                 self.0
@@ -56,8 +59,12 @@ macro_rules! impl_bigint_wrapper {
                 self.0.bits_vartime() as usize
             }
             /// Construct `Self` from little-endian bytes
-            pub fn from_le_bytes(bytes: <$wrapped as Encoding>::Repr) -> Self {
+            pub fn from_le_bytes(bytes: [u8; Self::BYTES]) -> Self {
                 Self(Encoding::from_le_bytes(bytes))
+            }
+
+            pub fn from_words(words: [u64; Self::WORDS]) -> Self {
+                Self(<$wrapped>::from_words(words))
             }
         }
 
@@ -102,8 +109,8 @@ macro_rules! impl_bigint_wrapper {
     };
 }
 
-impl_bigint_wrapper!(U256, crypto_bigint::U256);
-impl_bigint_wrapper!(U512, crypto_bigint::U512);
+impl_bigint_wrapper!(U256, crypto_bigint::U256, 256);
+impl_bigint_wrapper!(U512, crypto_bigint::U512, 512);
 
 impl U256 {
     /// Calculates the double-width product of `self` and `other`
