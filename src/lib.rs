@@ -63,7 +63,7 @@ macro_rules! impl_bigint_wrapper {
                 Self(Encoding::from_le_bytes(bytes))
             }
 
-            pub fn from_words(words: [u64; Self::WORDS]) -> Self {
+            pub const fn from_words(words: [u64; Self::WORDS]) -> Self {
                 Self(<$wrapped>::from_words(words))
             }
         }
