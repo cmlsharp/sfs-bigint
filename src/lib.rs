@@ -9,6 +9,44 @@ use std::ops::Neg;
 
 use crypto_bigint::Limb;
 
+const fn mul_add_64(a: u64, mul: u64, add: u64) -> (u64, u64) {
+    let product = (a as u128) * (mul as u128) + (add as u128);
+    (product as u64, (product >> 64) as u64)
+}
+
+const fn str_to_limbs<const N: usize>(s: &str, radix: u32) -> [u64; N] {
+    let bytes = s.as_bytes();
+    let mut out = [0u64; N];
+
+    let mut i = 0;
+    while i < bytes.len() {
+        let ch = bytes[i];
+        let digit = match ch {
+            b'0'..=b'9' => (ch - b'0') as u32,
+            b'a'..=b'z' => 10 + (ch - b'a') as u32,
+            b'A'..=b'Z' => 10 + (ch - b'A') as u32,
+            _ => panic!("invalid character"),
+        };
+
+        if digit >= radix {
+            panic!("digit out of range for radix");
+        }
+
+        let mut carry = digit as u64;
+        let mut j = 0;
+        while j < N {
+            let (lo, hi) = mul_add_64(out[j], radix as u64, carry);
+            out[j] = lo;
+            carry = hi;
+            j += 1;
+        }
+
+        i += 1;
+    }
+
+    out
+}
+
 macro_rules! impl_bigint_wrapper {
     ($name:ident, $wrapped:path, $width:literal) => {
         #[derive(
@@ -65,6 +103,12 @@ macro_rules! impl_bigint_wrapper {
 
             pub const fn from_words(words: [u64; Self::WORDS]) -> Self {
                 Self(<$wrapped>::from_words(words))
+            }
+
+            /// it is better to use `from_str_radix` (which returns a Result) on non-const inputs.
+            /// this function panics on invalid strings, but it is usable in const contexts
+            pub const fn from_str_radix_const(s: &str, radix: u32) -> Self {
+                Self::from_words(str_to_limbs(s, radix))
             }
         }
 
