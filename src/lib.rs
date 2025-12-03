@@ -111,6 +111,10 @@ macro_rules! impl_bigint_wrapper {
             pub const fn from_str_radix_const(s: &str, radix: u32) -> Self {
                 Self::from_words(str_to_limbs(s, radix))
             }
+
+            pub const fn from_le_slice(byte_slice: &[u8]) -> Self {
+                Self(<$wrapped>::from_le_slice(byte_slice))
+            }
         }
 
         impl Neg for $name {
