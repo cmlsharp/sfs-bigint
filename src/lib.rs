@@ -86,6 +86,9 @@ macro_rules! impl_bigint_wrapper {
         impl $name {
             pub const BYTES: usize = $width / 8;
             pub const WORDS: usize = $width / 64;
+            pub const ZERO: Self = $name(<$wrapped>::ZERO);
+            pub const ONE: Self = $name(<$wrapped>::ONE);
+            pub const MAX: Self = $name(<$wrapped>::MAX);
 
             /// Returns `true` if the bit at index `i` is set.
             pub fn bit(&self, i: usize) -> bool {
@@ -198,6 +201,46 @@ macro_rules! impl_bigint_wrapper {
     };
 }
 
+#[derive(Clone, Debug)]
+pub struct U256Params {
+    range: std::ops::RangeInclusive<U256>,
+}
+
+impl U256Params {
+    pub fn range(range: std::ops::RangeInclusive<impl Into<U256>>) -> Self {
+        let (start, end) = range.into_inner();
+        Self {
+            range: start.into()..=end.into(),
+        }
+    }
+}
+impl Default for U256Params {
+    fn default() -> Self {
+        Self {
+            range: U256::ZERO..=U256::MAX,
+        }
+    }
+}
+
+use proptest::prelude::*;
+impl Arbitrary for U256 {
+    type Parameters = U256Params;
+    type Strategy = BoxedStrategy<Self>;
+    fn arbitrary_with(params: Self::Parameters) -> Self::Strategy {
+        let lo = params.range.start().0;
+        let hi = params.range.end().0;
+
+        any::<[u64; 4]>()
+            .prop_map(move |limbs| {
+                let val = crypto_bigint::U256::from_words(limbs);
+                let range_size = hi.wrapping_sub(&lo).wrapping_add(&crypto_bigint::U256::ONE);
+                let reduced = val.rem(&crypto_bigint::NonZero::new(range_size).unwrap());
+                Self(lo.wrapping_add(&reduced))
+            })
+            .boxed()
+    }
+}
+
 impl_bigint_wrapper!(U256, crypto_bigint::U256, 256);
 impl_bigint_wrapper!(U512, crypto_bigint::U512, 512);
 
@@ -205,6 +248,11 @@ impl U256 {
     /// Calculates the double-width product of `self` and `other`
     pub fn widening_mul(&self, other: &Self) -> U512 {
         U512(self.0.widening_mul(&other.0))
+    }
+
+    /// This is used purely for constructing unit tests, can be ignored by students
+    pub fn arbitrary_range(range: std::ops::RangeInclusive<Self>) -> impl Strategy<Value = Self> {
+        any_with::<U256>(U256Params { range })
     }
 
     /// Calculates self + rhs and returns a tuple containing the sum and the output carry.

@@ -7,4 +7,6 @@ edition = "2024"
 crypto-bigint = { version = "0.6.1", features = ["alloc", "serde"] }
 derive_more = { version = "2.1.0", features = ["add", "add_assign", "mul", "mul_assign", "not", "sum"] }
 num-traits = "0.2.19"
+proptest = "1.9.0"
+proptest-derive = "0.7.0"
 serde = { version = "1.0.228", features = ["derive"] }
