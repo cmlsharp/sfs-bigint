@@ -1,7 +1,7 @@
 use crypto_bigint::Encoding;
 use derive_more::{
     Add, AddAssign, BitAnd, BitAndAssign, BitOr, BitOrAssign, BitXor, BitXorAssign, Div, DivAssign,
-    Mul, MulAssign, Not, Rem, RemAssign, Sub, SubAssign,
+    Mul, MulAssign, Not, Rem, RemAssign, Shl, ShlAssign, Shr, ShrAssign, Sub, SubAssign,
 };
 use num_traits::{Num, One, Zero};
 use serde::{Deserialize, Serialize};
