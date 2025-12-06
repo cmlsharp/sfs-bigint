@@ -6,6 +6,7 @@ use derive_more::{
 use num_traits::{Num, One, Zero};
 use serde::{Deserialize, Serialize};
 use std::ops::Neg;
+use std::str::FromStr;
 
 use crypto_bigint::Limb;
 
@@ -196,6 +197,13 @@ macro_rules! impl_bigint_wrapper {
         impl std::fmt::Octal for $name {
             fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
                 write!(f, "{}", self.0.to_string_radix_vartime(8))
+            }
+        }
+
+        impl FromStr for $name {
+            type Err = <$wrapped as Num>::FromStrRadixErr;
+            fn from_str(s: &str) -> Result<Self, Self::Err> {
+                <$wrapped>::from_str_radix(s, 10).map($name)
             }
         }
     };
