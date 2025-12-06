@@ -233,9 +233,13 @@ impl Arbitrary for U256 {
         any::<[u64; 4]>()
             .prop_map(move |limbs| {
                 let val = crypto_bigint::U256::from_words(limbs);
+
                 let range_size = hi.wrapping_sub(&lo).wrapping_add(&crypto_bigint::U256::ONE);
-                let reduced = val.rem(&crypto_bigint::NonZero::new(range_size).unwrap());
-                Self(lo.wrapping_add(&reduced))
+
+                match crypto_bigint::NonZero::new(range_size).into() {
+                    Some(nz) => Self(lo.wrapping_add(&val.rem(&nz))),
+                    None => Self(val), // range_size wrapped to 0, meaning full range
+                }
             })
             .boxed()
     }
