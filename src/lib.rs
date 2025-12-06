@@ -78,6 +78,10 @@ macro_rules! impl_bigint_wrapper {
             BitXor,
             BitXorAssign,
             Not,
+            Shl,
+            ShlAssign,
+            Shr,
+            ShrAssign,
         )]
         #[mul(forward)]
         #[div(forward)]
