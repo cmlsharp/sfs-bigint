@@ -282,7 +282,7 @@ impl U256 {
 
     /// Calculates self - rhs and returns a tuple containing the difference and the output
     /// borrow. If `borrow` is false, this is equivalent to normal integer subtraction.
-    /// If `borrow` is true, this is equal to `self - rhs`
+    /// If `borrow` is true, this is equal to `self - rhs % 2**256`
     pub fn borrowing_sub(&self, rhs: &Self) -> (Self, bool) {
         let (res, Limb(borrow)) = self.0.sbb(&rhs.0, Limb::ZERO);
         debug_assert!(borrow == 0 || borrow == u64::MAX);
